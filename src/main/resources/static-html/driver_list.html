@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html><head><title>Drivers</title></head><body>
+<h2>Drivers Sorted by Rating</h2>
+<table id="drivers"></table>
+<script>
+fetch('/api/drivers')
+  .then(res => res.json())
+  .then(data => {
+    const t = document.getElementById('drivers');
+    t.innerHTML = '<tr><th>ID</th><th>Name</th><th>Vehicle</th><th>Rating</th></tr>' +
+      data.map(d => `<tr><td>${d.id}</td><td>${d.name}</td><td>${d.vehicle}</td><td>${d.rating}</td></tr>`).join('');
+  });
+</script>
+</body></html>
