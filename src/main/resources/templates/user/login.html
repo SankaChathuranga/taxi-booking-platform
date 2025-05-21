@@ -90,8 +90,9 @@
         <h2>Login</h2>
         <p>Enter your credentials to access your account.</p>
         
-        <div th:if="${error}" class="error-message">
-            <p th:text="${error}"></p>
+        <!-- Display error message if login fails (Spring Security default) -->
+        <div th:if="${param.error}" class="error-message">
+            <p>Invalid email or password.</p>
         </div>
         
         <form action="/users/login" method="post">
