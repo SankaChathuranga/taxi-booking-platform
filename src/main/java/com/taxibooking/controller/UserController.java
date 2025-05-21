@@ -1,189 +1,53 @@
-package com.taxibooking.controller;
+package com.taxiservice.controller;
 
-import com.taxibooking.model.User;
-import com.taxibooking.model.Passenger;
-import com.taxibooking.model.Driver;
-import com.taxibooking.service.UserFileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.taxiservice.dto.ApiResponse;
+import com.taxiservice.dto.UserDTO;
+import com.taxiservice.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-@Controller
-@RequestMapping("/users")
+@RestController
+@RequestMapping("/api/users")
 public class UserController {
-    
-    private final UserFileService userFileService;
-    private final PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    public UserController(UserFileService userFileService, PasswordEncoder passwordEncoder) {
-        this.userFileService = userFileService;
-        this.passwordEncoder = passwordEncoder;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
-    
-    // Registration endpoints
-    @GetMapping("/register")
-    public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new User());
-        return "user/register";
-    }
-    
-    @PostMapping("/register/passenger")
-    public String registerPassenger(@ModelAttribute Passenger passenger) {
-        try {
-            passenger.setUserId(userFileService.generateUserId());
-            // Encode password before saving
-            passenger.setPassword(passwordEncoder.encode(passenger.getPassword()));
-            userFileService.saveUser(passenger);
-            return "redirect:/users/login";
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
-    @PostMapping("/register/driver")
-    public String registerDriver(@ModelAttribute Driver driver) {
-        try {
-            driver.setUserId(userFileService.generateUserId());
-            // Encode password before saving
-            driver.setPassword(passwordEncoder.encode(driver.getPassword()));
-            userFileService.saveUser(driver);
-            return "redirect:/users/login";
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
+
     @PostMapping("/register")
-    public String registerUser(@RequestParam String fullName,
-                             @RequestParam String email,
-                             @RequestParam String password,
-                             @RequestParam String confirmPassword,
-                             @RequestParam User.UserType userType,
-                             Model model) {
-        if (!password.equals(confirmPassword)) {
-            model.addAttribute("error", "Passwords do not match");
-            model.addAttribute("fullName", fullName);
-            model.addAttribute("email", email);
-            model.addAttribute("userType", userType);
-            return "user/register";
-        }
+    public ResponseEntity<ApiResponse<UserDTO>> registerUser(@RequestBody UserDTO userDTO) {
+        UserDTO registeredUser = userService.registerUser(userDTO);
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully", registeredUser));
+    }
 
-        try {
-            // Check if user with the same email already exists
-            if (userFileService.getUserByEmail(email).isPresent()) {
-                 model.addAttribute("error", "User with this email already exists");
-                 model.addAttribute("fullName", fullName);
-                 model.addAttribute("email", email);
-                 model.addAttribute("userType", userType);
-                 return "user/register";
-            }
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<UserDTO>> login(@RequestBody UserDTO loginRequest) {
+        UserDTO user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        return ResponseEntity.ok(ApiResponse.success("Login successful", user));
+    }
 
-            User newUser;
-            String userId = userFileService.generateUserId();
-            String encodedPassword = passwordEncoder.encode(password);
-            
-            // Create appropriate user type object
-            switch (userType) {
-                case PASSENGER:
-                    newUser = new Passenger(userId, email, encodedPassword, email, null, fullName, null);
-                    break;
-                case DRIVER:
-                    newUser = new Driver(userId, email, encodedPassword, email, null, fullName, null, null, null);
-                    break;
-                case ADMIN:
-                    newUser = new User(userId, email, encodedPassword, email, null, fullName, null, userType);
-                    break;
-                default:
-                    model.addAttribute("error", "Invalid user type");
-                    model.addAttribute("fullName", fullName);
-                    model.addAttribute("email", email);
-                    model.addAttribute("userType", userType);
-                    return "user/register";
-            }
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> getUserDetails(@PathVariable String id) {
+        UserDTO user = userService.getUserDetails(id);
+        return ResponseEntity.ok(ApiResponse.success(user));
+    }
 
-            userFileService.saveUser(newUser);
-            return "redirect:/users/login";
-        } catch (IOException e) {
-            model.addAttribute("error", "Error during registration: " + e.getMessage());
-            model.addAttribute("fullName", fullName);
-            model.addAttribute("email", email);
-            model.addAttribute("userType", userType);
-            return "user/register";
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(@PathVariable String id, @RequestBody UserDTO userDTO) {
+        UserDTO updatedUser = userService.updateUser(id, userDTO);
+        return ResponseEntity.ok(ApiResponse.success("User updated successfully", updatedUser));
     }
-    
-    // Login endpoints
-    @GetMapping("/login")
-    public String showLoginForm() {
-        return "user/login";
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
-    
-    // Profile management endpoints
-    @GetMapping("/profile")
-    public String showProfile(@RequestParam String userId, Model model) {
-        try {
-            Optional<User> userOpt = userFileService.getUserById(userId);
-            if (userOpt.isPresent()) {
-                model.addAttribute("user", userOpt.get());
-                return "user/profile";
-            }
-            return "error";
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
-    @PostMapping("/profile/update")
-    public String updateProfile(@ModelAttribute User user) {
-        try {
-            userFileService.saveUser(user);
-            return "redirect:/users/profile?userId=" + user.getUserId();
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
-    // Admin endpoints
-    @GetMapping("/admin/list")
-    public String listUsers(Model model) {
-        try {
-            List<User> users = userFileService.getAllUsers();
-            model.addAttribute("users", users);
-            return "user/list";
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
-    @PostMapping("/admin/delete/{userId}")
-    public String deleteUser(@PathVariable String userId) {
-        try {
-            userFileService.deleteUser(userId);
-            return "redirect:/users/admin/list";
-        } catch (IOException e) {
-            return "error";
-        }
-    }
-    
-    // API endpoints for other components
-    @GetMapping("/api/{userId}")
-    @ResponseBody
-    public ResponseEntity<User> getUserById(@PathVariable String userId) {
-        try {
-            Optional<User> userOpt = userFileService.getUserById(userId);
-            return userOpt.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<UserDTO>>> getAllUsers() {
+        java.util.List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(ApiResponse.success(users));
     }
 } 
