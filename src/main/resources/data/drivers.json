@@ -1,0 +1,11 @@
+[
+    {
+        "id": "d1e2f3g4",
+        "userId": "driver123",
+        "licenseNumber": "DL987654",
+        "vehicleDetails": "Honda Civic 2018",
+        "currentLocation": "Central Park",
+        "rating": 4.8,
+        "availability": true
+    }
+]
