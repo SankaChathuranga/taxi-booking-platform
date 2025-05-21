@@ -1,2 +1,0 @@
-# User Reviews and Ratings
-# Format: reviewId,userId,driverId,rating,comment,date 

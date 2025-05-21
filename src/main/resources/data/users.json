@@ -1,0 +1,38 @@
+[
+    {
+        "id": "a1b2c3d4",
+        "name": "Alice Smith",
+        "email": "alice@example.com",
+        "password": "alicepass",
+        "phone": "5551234567",
+        "address": "123 Elm Street",
+        "role": "CUSTOMER"
+    },
+    {
+        "id": "bb7f59b2-10a5-4b17-bfbe-4c8739225a45",
+        "name": "Chamal Senarathna",
+        "email": "chamals004@gmail.com",
+        "password": "0000",
+        "phone": "0717110160",
+        "address": "Bamunapotha",
+        "role": "CUSTOMER"
+    },
+    {
+        "id": "admin123",
+        "name": "Admin User",
+        "email": "admin@example.com",
+        "password": "adminpass",
+        "phone": "5550000000",
+        "address": "Admin Office",
+        "role": "ADMIN"
+    },
+    {
+        "id": "driver123",
+        "name": "John Driver",
+        "email": "driver@example.com",
+        "password": "driverpass",
+        "phone": "5551111111",
+        "address": "789 Driver Street",
+        "role": "DRIVER"
+    }
+]

@@ -1,2 +1,0 @@
-# Booking Information
-# Format: bookingId,userId,driverId,vehicleId,pickupLocation,dropoffLocation,bookingDate,status,fare 
