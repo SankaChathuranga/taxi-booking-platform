@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="'Booking ' + ${booking.bookingId} + ' - Taxi Booking System'">
+        Booking Details - Taxi Booking System
+    </title>
+</head>
+<body>
+    <section class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1" th:text="'Booking ' + ${booking.bookingId}">Booking BOOKING-123</h2>
+                <p class="text-muted mb-0" th:text="${#temporals.format(booking.bookingTime, 'dd MMMM yyyy, HH:mm')}">
+                    01 January 2024, 12:00
+                </p>
+            </div>
+            <div class="btn-group">
+                <a th:href="@{/bookings/active}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to List
+                </a>
+                <button th:if="${booking.status == T(com.taxibooking.model.Booking.BookingStatus).PENDING}"
+                        class="btn btn-outline-danger"
+                        th:onclick="'cancelBooking(\'' + ${booking.bookingId} + '\')'">
+                    <i class="bi bi-x-circle me-2"></i>Cancel Booking
+                </button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Main Information -->
+            <div class="col-md-8">
+                <!-- Status Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-1">Booking Status</h5>
+                                <span th:class="${'badge ' + 
+                                    (booking.status == T(com.taxibooking.model.Booking.BookingStatus).PENDING ? 'bg-warning' : 
+                                     booking.status == T(com.taxibooking.model.Booking.BookingStatus).CONFIRMED ? 'bg-info' :
+                                     booking.status == T(com.taxibooking.model.Booking.BookingStatus).IN_PROGRESS ? 'bg-primary' :
+                                     booking.status == T(com.taxibooking.model.Booking.BookingStatus).COMPLETED ? 'bg-success' :
+                                     booking.status == T(com.taxibooking.model.Booking.BookingStatus).CANCELLED ? 'bg-danger' :
+                                     'bg-secondary')}"
+                                      th:text="${booking.status}">
+                                    PENDING
+                                </span>
+                            </div>
+                            <div th:if="${booking.isScheduled}" class="text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                <span th:text="${#temporals.format(booking.scheduledTime, 'dd MMM yyyy, HH:mm')}">
+                                    Scheduled for 01 Jan 2024, 12:00
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Journey Details -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Journey Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Pickup Location</label>
+                                    <p class="mb-0" th:text="${booking.pickupLocation}">123 Main St</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Pickup Time</label>
+                                    <p class="mb-0" th:text="${#temporals.format(booking.pickupTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:00
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Dropoff Location</label>
+                                    <p class="mb-0" th:text="${booking.dropoffLocation}">456 Park Ave</p>
+                                </div>
+                                <div class="mb-3" th:if="${booking.dropoffTime != null}">
+                                    <label class="form-label text-muted">Dropoff Time</label>
+                                    <p class="mb-0" th:text="${#temporals.format(booking.dropoffTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:30
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" th:if="${booking.distance != null || booking.fare != null}">
+                            <div class="col-md-6" th:if="${booking.distance != null}">
+                                <label class="form-label text-muted">Distance</label>
+                                <p class="mb-0" th:text="${booking.distance + ' km'}">5.2 km</p>
+                            </div>
+                            <div class="col-md-6" th:if="${booking.fare != null}">
+                                <label class="form-label text-muted">Fare</label>
+                                <p class="mb-0" th:text="${'$' + #numbers.formatDecimal(booking.fare, 1, 2)}">$15.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Driver Information -->
+                <div class="card shadow-sm mb-4" th:if="${driver != null}">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Driver Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <img th:src="${driver.profilePicture != null ? driver.profilePicture : '/images/default-driver.png'}"
+                                     class="rounded-circle" width="64" height="64" alt="Driver Photo">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1" th:text="${driver.fullName}">John Doe</h6>
+                                <p class="text-muted mb-0" th:text="${driver.vehicleType + ' - ' + driver.licensePlate}">
+                                    Sedan - ABC123
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <a th:href="@{/drivers/{id}(id=${driver.userId})}" class="btn btn-outline-primary btn-sm">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Contact Number</label>
+                                    <p class="mb-0" th:text="${driver.phoneNumber}">+1 234 567 8900</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Current Location</label>
+                                    <p class="mb-0" th:text="${driver.currentLocation}">Downtown</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="card shadow-sm" th:if="${booking.notes != null && !booking.notes.isEmpty()}">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Additional Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0" th:text="${booking.notes}">Special instructions for the driver</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-md-4">
+                <!-- Payment Status -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Payment Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span th:class="${'badge ' + 
+                                (booking.paymentStatus == T(com.taxibooking.model.Booking.PaymentStatus).PAID ? 'bg-success' : 
+                                 booking.paymentStatus == T(com.taxibooking.model.Booking.PaymentStatus).PENDING ? 'bg-warning' :
+                                 booking.paymentStatus == T(com.taxibooking.model.Booking.PaymentStatus).REFUNDED ? 'bg-info' :
+                                 'bg-danger')}"
+                                  th:text="${booking.paymentStatus}">
+                                PENDING
+                            </span>
+                            <span th:if="${booking.fare != null}" 
+                                  th:text="${'$' + #numbers.formatDecimal(booking.fare, 1, 2)}"
+                                  class="h5 mb-0">
+                                $15.00
+                            </span>
+                        </div>
+                        <div th:if="${booking.paymentStatus == T(com.taxibooking.model.Booking.PaymentStatus).PENDING && 
+                                   booking.status == T(com.taxibooking.model.Booking.BookingStatus).COMPLETED}"
+                             class="d-grid">
+                            <button class="btn btn-primary" onclick="processPayment()">
+                                <i class="bi bi-credit-card me-2"></i>Process Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Timeline -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Booking Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Booking Created</h6>
+                                    <p class="text-muted mb-0" th:text="${#temporals.format(booking.bookingTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:00
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" th:if="${booking.driverId != null}">
+                                <div class="timeline-marker bg-info"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Driver Assigned</h6>
+                                    <p class="text-muted mb-0" th:text="${driver.fullName}">John Doe</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" th:if="${booking.status == T(com.taxibooking.model.Booking.BookingStatus).IN_PROGRESS || 
+                                                              booking.status == T(com.taxibooking.model.Booking.BookingStatus).COMPLETED}">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Ride Started</h6>
+                                    <p class="text-muted mb-0" th:text="${#temporals.format(booking.pickupTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:15
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" th:if="${booking.status == T(com.taxibooking.model.Booking.BookingStatus).COMPLETED}">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Ride Completed</h6>
+                                    <p class="text-muted mb-0" th:text="${#temporals.format(booking.dropoffTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:30
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" th:if="${booking.status == T(com.taxibooking.model.Booking.BookingStatus).CANCELLED}">
+                                <div class="timeline-marker bg-danger"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Booking Cancelled</h6>
+                                    <p class="text-muted mb-0" th:text="${#temporals.format(booking.dropoffTime, 'dd MMM yyyy, HH:mm')}">
+                                        01 Jan 2024, 12:05
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px currentColor;
+        }
+        
+        .timeline-content {
+            padding-left: 0;
+        }
+    </style>
+    
+    <script th:inline="javascript">
+        function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                fetch(`/bookings/${bookingId}/cancel`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('Failed to cancel booking');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to cancel booking');
+                });
+            }
+        }
+        
+        function processPayment() {
+            // Implement payment processing logic here
+            alert('Payment processing functionality to be implemented');
+        }
+    </script>
+</body>
+</html> 

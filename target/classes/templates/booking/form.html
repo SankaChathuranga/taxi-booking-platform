@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>New Booking - Taxi Booking System</title>
+</head>
+<body>
+    <section class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Create New Booking</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/bookings/create}" method="post" id="bookingForm" class="needs-validation" novalidate>
+                            <!-- Customer ID (hidden) -->
+                            <input type="hidden" name="customerId" th:value="${session.customerId}" required>
+                            
+                            <!-- Pickup Location -->
+                            <div class="mb-3">
+                                <label for="pickupLocation" class="form-label">Pickup Location</label>
+                                <input type="text" class="form-control" id="pickupLocation" name="pickupLocation" 
+                                       placeholder="Enter pickup address" required>
+                                <div class="invalid-feedback">
+                                    Please enter a pickup location.
+                                </div>
+                            </div>
+                            
+                            <!-- Dropoff Location -->
+                            <div class="mb-3">
+                                <label for="dropoffLocation" class="form-label">Dropoff Location</label>
+                                <input type="text" class="form-control" id="dropoffLocation" name="dropoffLocation" 
+                                       placeholder="Enter dropoff address" required>
+                                <div class="invalid-feedback">
+                                    Please enter a dropoff location.
+                                </div>
+                            </div>
+                            
+                            <!-- Vehicle Type -->
+                            <div class="mb-3">
+                                <label for="vehicleType" class="form-label">Vehicle Type</label>
+                                <select class="form-select" id="vehicleType" name="vehicleType" required>
+                                    <option value="">Select a vehicle type</option>
+                                    <option th:each="type : ${vehicleTypes}" th:value="${type}" th:text="${type}">
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a vehicle type.
+                                </div>
+                            </div>
+                            
+                            <!-- Booking Type -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isScheduled" name="isScheduled">
+                                    <label class="form-check-label" for="isScheduled">
+                                        Schedule for later
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Scheduled Time (initially hidden) -->
+                            <div class="mb-3" id="scheduledTimeGroup" style="display: none;">
+                                <label for="scheduledTime" class="form-label">Scheduled Time</label>
+                                <input type="datetime-local" class="form-control" id="scheduledTime" name="scheduledTime"
+                                       th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}">
+                                <div class="invalid-feedback">
+                                    Please select a valid scheduled time.
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Additional Notes (Optional)</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                          placeholder="Enter any special instructions or requirements"></textarea>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Create Booking
+                                </button>
+                                <a th:href="@{/bookings/active}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('bookingForm');
+            const isScheduledCheckbox = document.getElementById('isScheduled');
+            const scheduledTimeGroup = document.getElementById('scheduledTimeGroup');
+            const scheduledTimeInput = document.getElementById('scheduledTime');
+            
+            // Toggle scheduled time input visibility
+            isScheduledCheckbox.addEventListener('change', function() {
+                scheduledTimeGroup.style.display = this.checked ? 'block' : 'none';
+                scheduledTimeInput.required = this.checked;
+            });
+            
+            // Form validation
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                // Additional validation for scheduled bookings
+                if (isScheduledCheckbox.checked) {
+                    const scheduledTime = new Date(scheduledTimeInput.value);
+                    const now = new Date();
+                    
+                    if (scheduledTime <= now) {
+                        event.preventDefault();
+                        alert('Scheduled time must be in the future');
+                        return;
+                    }
+                }
+                
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+</body>
+</html> 

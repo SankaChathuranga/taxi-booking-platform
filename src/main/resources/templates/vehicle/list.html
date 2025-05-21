@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Vehicles - Taxi Booking System</title>
+</head>
+<body>
+    <section class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Vehicles</h2>
+            <a th:href="@{/vehicles/register}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Register New Vehicle
+            </a>
+        </div>
+        
+        <!-- Filters -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form id="filterForm" class="row g-3">
+                    <!-- Type Filter -->
+                    <div class="col-md-3">
+                        <label for="typeFilter" class="form-label">Vehicle Type</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="">All Types</option>
+                            <option th:each="type : ${vehicleTypes}" th:value="${type}" th:text="${type}">
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}">
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Search -->
+                    <div class="col-md-6">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="searchInput" 
+                               placeholder="License plate, make, model...">
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Vehicles Table -->
+        <div class="card shadow">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <a href="#" class="text-decoration-none text-dark" data-sort="licensePlate">
+                                    License Plate
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </a>
+                            </th>
+                            <th>Vehicle Details</th>
+                            <th>Type</th>
+                            <th>Capacity</th>
+                            <th>
+                                <a href="#" class="text-decoration-none text-dark" data-sort="status">
+                                    Status
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </a>
+                            </th>
+                            <th>Driver</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="vehicle : ${vehicles}" th:data-vehicle-id="${vehicle.vehicleId}">
+                            <td>
+                                <a th:href="@{/vehicles/{id}(id=${vehicle.vehicleId})}" 
+                                   class="text-decoration-none" th:text="${vehicle.licensePlate}">
+                                    ABC123
+                                </a>
+                            </td>
+                            <td th:text="${vehicle.getVehicleDetails()}">2020 Toyota Camry</td>
+                            <td th:text="${vehicle.vehicleType}">ECONOMY</td>
+                            <td th:text="${vehicle.capacity + ' seats'}">4 seats</td>
+                            <td>
+                                <span th:class="${'badge ' + 
+                                    (vehicle.status == T(com.taxibooking.model.Vehicle.VehicleStatus).AVAILABLE ? 'bg-success' : 
+                                     vehicle.status == T(com.taxibooking.model.Vehicle.VehicleStatus).IN_USE ? 'bg-primary' :
+                                     vehicle.status == T(com.taxibooking.model.Vehicle.VehicleStatus).MAINTENANCE ? 'bg-warning' :
+                                     'bg-danger')}"
+                                      th:text="${vehicle.status}">
+                                    AVAILABLE
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${vehicle.driverId != null}" th:text="${vehicle.driverId}">DRIVER-123</span>
+                                <span th:unless="${vehicle.driverId != null}" class="text-muted">Unassigned</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a th:href="@{/vehicles/{id}(id=${vehicle.vehicleId})}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{/vehicles/{id}/edit(id=${vehicle.vehicleId})}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button th:if="${vehicle.driverId == null}"
+                                            class="btn btn-sm btn-outline-success"
+                                            th:onclick="'assignDriver(\'' + ${vehicle.vehicleId} + '\')'">
+                                        <i class="bi bi-person-plus"></i>
+                                    </button>
+                                    <button th:if="${vehicle.driverId != null}"
+                                            class="btn btn-sm btn-outline-warning"
+                                            th:onclick="'unassignDriver(\'' + ${vehicle.vehicleId} + '\')'">
+                                        <i class="bi bi-person-dash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            th:onclick="'deleteVehicle(\'' + ${vehicle.vehicleId} + '\')'">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(vehicles)}">
+                            <td colspan="7" class="text-center py-4">
+                                <i class="bi bi-car-front display-4 text-muted"></i>
+                                <p class="mt-2 text-muted">No vehicles found</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Assign Driver Modal -->
+    <div class="modal fade" id="assignDriverModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Driver</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assignDriverForm">
+                        <input type="hidden" id="vehicleIdForAssignment">
+                        <div class="mb-3">
+                            <label for="driverSelect" class="form-label">Select Driver</label>
+                            <select class="form-select" id="driverSelect" required>
+                                <option value="">Choose a driver...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmDriverAssignment()">
+                        Assign Driver
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Initialize modal
+            const assignDriverModal = new bootstrap.Modal(document.getElementById('assignDriverModal'));
+            
+            // Filter and search functionality
+            const filterForm = document.getElementById('filterForm');
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const typeValue = typeFilter.value;
+                const statusValue = statusFilter.value;
+                
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    if (row.querySelector('td:first-child').textContent === 'No vehicles found') {
+                        return;
+                    }
+                    
+                    const licensePlate = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const vehicleDetails = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const vehicleType = row.querySelector('td:nth-child(3)').textContent;
+                    const status = row.querySelector('td:nth-child(5) span').textContent;
+                    
+                    const matchesSearch = licensePlate.includes(searchTerm) ||
+                                        vehicleDetails.includes(searchTerm);
+                    const matchesType = !typeValue || vehicleType === typeValue;
+                    const matchesStatus = !statusValue || status === statusValue;
+                    
+                    row.style.display = matchesSearch && matchesType && matchesStatus ? '' : 'none';
+                });
+            }
+            
+            filterForm.addEventListener('input', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
+            
+            // Sorting functionality
+            document.querySelectorAll('th a[data-sort]').forEach(header => {
+                header.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sortBy = this.dataset.sort;
+                    const tbody = document.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    // Remove sorting indicators
+                    document.querySelectorAll('th a i').forEach(icon => {
+                        icon.className = 'bi bi-arrow-down-up';
+                    });
+                    
+                    // Add sorting indicator
+                    const icon = this.querySelector('i');
+                    icon.className = icon.className.includes('up') ? 
+                        'bi bi-arrow-down' : 'bi bi-arrow-up';
+                    
+                    // Sort rows
+                    rows.sort((a, b) => {
+                        if (a.querySelector('td:first-child').textContent === 'No vehicles found') {
+                            return 1;
+                        }
+                        if (b.querySelector('td:first-child').textContent === 'No vehicles found') {
+                            return -1;
+                        }
+                        
+                        let aValue, bValue;
+                        switch (sortBy) {
+                            case 'licensePlate':
+                                aValue = a.querySelector('td:first-child').textContent;
+                                bValue = b.querySelector('td:first-child').textContent;
+                                break;
+                            case 'status':
+                                aValue = a.querySelector('td:nth-child(5) span').textContent;
+                                bValue = b.querySelector('td:nth-child(5) span').textContent;
+                                break;
+                        }
+                        
+                        if (icon.className.includes('up')) {
+                            return aValue > bValue ? 1 : -1;
+                        } else {
+                            return aValue < bValue ? 1 : -1;
+                        }
+                    });
+                    
+                    // Reorder rows
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+        });
+        
+        // Action functions
+        function assignDriver(vehicleId) {
+            document.getElementById('vehicleIdForAssignment').value = vehicleId;
+            
+            // Fetch available drivers
+            fetch('/drivers/api/available')
+                .then(response => response.json())
+                .then(drivers => {
+                    const select = document.getElementById('driverSelect');
+                    select.innerHTML = '<option value="">Choose a driver...</option>';
+                    drivers.forEach(driver => {
+                        const option = document.createElement('option');
+                        option.value = driver.userId;
+                        option.textContent = `${driver.fullName} (${driver.vehicleType})`;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching drivers:', error);
+                    alert('Failed to load available drivers');
+                });
+            
+            new bootstrap.Modal(document.getElementById('assignDriverModal')).show();
+        }
+        
+        function confirmDriverAssignment() {
+            const vehicleId = document.getElementById('vehicleIdForAssignment').value;
+            const driverId = document.getElementById('driverSelect').value;
+            
+            if (!driverId) {
+                alert('Please select a driver');
+                return;
+            }
+            
+            fetch(`/vehicles/${vehicleId}/assign?driverId=${driverId}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    throw new Error('Failed to assign driver');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to assign driver');
+            });
+        }
+        
+        function unassignDriver(vehicleId) {
+            if (confirm('Are you sure you want to unassign the driver from this vehicle?')) {
+                fetch(`/vehicles/${vehicleId}/unassign`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('Failed to unassign driver');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to unassign driver');
+                });
+            }
+        }
+        
+        function deleteVehicle(vehicleId) {
+            if (confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) {
+                fetch(`/vehicles/${vehicleId}/delete`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('Failed to delete vehicle');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete vehicle');
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Submit Review - Taxi Booking System</title>
+</head>
+<body>
+    <section class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Submit Review</h2>
+                    <a th:href="@{/bookings/{id}(id=${bookingId})}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Booking
+                    </a>
+                </div>
+                
+                <!-- Review Type Selection -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="reviewType" id="quickReview" value="quick" checked>
+                            <label class="btn btn-outline-primary" for="quickReview">
+                                <i class="bi bi-lightning-charge me-2"></i>Quick Review
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="reviewType" id="detailedReview" value="detailed">
+                            <label class="btn btn-outline-primary" for="detailedReview">
+                                <i class="bi bi-card-text me-2"></i>Detailed Review
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Review Form -->
+                <div id="quickReviewForm" class="card shadow">
+                    <div class="card-body">
+                        <form th:action="@{/reviews/submit/quick}" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="bookingId" th:value="${bookingId}">
+                            <input type="hidden" name="driverId" th:value="${driverId}">
+                            <input type="hidden" name="customerId" th:value="${#authentication.principal.userId}">
+                            
+                            <!-- Rating -->
+                            <div class="mb-4">
+                                <label class="form-label">Rating</label>
+                                <div class="rating-stars">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="rating" id="rating1" value="1" required>
+                                        <label class="btn btn-outline-warning" for="rating1">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating2" value="2">
+                                        <label class="btn btn-outline-warning" for="rating2">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating3" value="3">
+                                        <label class="btn btn-outline-warning" for="rating3">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating4" value="4">
+                                        <label class="btn btn-outline-warning" for="rating4">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="rating5" value="5">
+                                        <label class="btn btn-outline-warning" for="rating5">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please select a rating.
+                                </div>
+                            </div>
+                            
+                            <!-- Short Comment -->
+                            <div class="mb-4">
+                                <label for="shortComment" class="form-label">Quick Comment (optional)</label>
+                                <textarea class="form-control" id="shortComment" name="shortComment" 
+                                          rows="2" maxlength="100" 
+                                          placeholder="Share your experience in a few words..."></textarea>
+                                <div class="form-text">
+                                    Maximum 100 characters
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Submit Quick Review
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Detailed Review Form -->
+                <div id="detailedReviewForm" class="card shadow d-none">
+                    <div class="card-body">
+                        <form th:action="@{/reviews/submit/detailed}" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="bookingId" th:value="${bookingId}">
+                            <input type="hidden" name="driverId" th:value="${driverId}">
+                            <input type="hidden" name="customerId" th:value="${#authentication.principal.userId}">
+                            
+                            <!-- Overall Rating -->
+                            <div class="mb-4">
+                                <label class="form-label">Overall Rating</label>
+                                <div class="rating-stars">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="rating" id="detailedRating1" value="1" required>
+                                        <label class="btn btn-outline-warning" for="detailedRating1">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="detailedRating2" value="2">
+                                        <label class="btn btn-outline-warning" for="detailedRating2">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="detailedRating3" value="3">
+                                        <label class="btn btn-outline-warning" for="detailedRating3">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="detailedRating4" value="4">
+                                        <label class="btn btn-outline-warning" for="detailedRating4">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="rating" id="detailedRating5" value="5">
+                                        <label class="btn btn-outline-warning" for="detailedRating5">
+                                            <i class="bi bi-star-fill"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please select an overall rating.
+                                </div>
+                            </div>
+                            
+                            <!-- Category Ratings -->
+                            <div class="mb-4">
+                                <label class="form-label">Category Ratings</label>
+                                <div class="category-ratings">
+                                    <!-- Punctuality -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Punctuality</label>
+                                        <div class="rating-stars">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="Punctuality" id="punctuality1" value="1" required>
+                                                <label class="btn btn-outline-warning" for="punctuality1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Punctuality" id="punctuality2" value="2">
+                                                <label class="btn btn-outline-warning" for="punctuality2">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Punctuality" id="punctuality3" value="3">
+                                                <label class="btn btn-outline-warning" for="punctuality3">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Punctuality" id="punctuality4" value="4">
+                                                <label class="btn btn-outline-warning" for="punctuality4">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Punctuality" id="punctuality5" value="5">
+                                                <label class="btn btn-outline-warning" for="punctuality5">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Professionalism -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Professionalism</label>
+                                        <div class="rating-stars">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="Professionalism" id="professionalism1" value="1" required>
+                                                <label class="btn btn-outline-warning" for="professionalism1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Professionalism" id="professionalism2" value="2">
+                                                <label class="btn btn-outline-warning" for="professionalism2">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Professionalism" id="professionalism3" value="3">
+                                                <label class="btn btn-outline-warning" for="professionalism3">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Professionalism" id="professionalism4" value="4">
+                                                <label class="btn btn-outline-warning" for="professionalism4">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Professionalism" id="professionalism5" value="5">
+                                                <label class="btn btn-outline-warning" for="professionalism5">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Vehicle Condition -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Vehicle Condition</label>
+                                        <div class="rating-stars">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="Vehicle Condition" id="vehicle1" value="1" required>
+                                                <label class="btn btn-outline-warning" for="vehicle1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Vehicle Condition" id="vehicle2" value="2">
+                                                <label class="btn btn-outline-warning" for="vehicle2">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Vehicle Condition" id="vehicle3" value="3">
+                                                <label class="btn btn-outline-warning" for="vehicle3">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Vehicle Condition" id="vehicle4" value="4">
+                                                <label class="btn btn-outline-warning" for="vehicle4">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Vehicle Condition" id="vehicle5" value="5">
+                                                <label class="btn btn-outline-warning" for="vehicle5">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Driving Skills -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Driving Skills</label>
+                                        <div class="rating-stars">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="Driving Skills" id="driving1" value="1" required>
+                                                <label class="btn btn-outline-warning" for="driving1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Driving Skills" id="driving2" value="2">
+                                                <label class="btn btn-outline-warning" for="driving2">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Driving Skills" id="driving3" value="3">
+                                                <label class="btn btn-outline-warning" for="driving3">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Driving Skills" id="driving4" value="4">
+                                                <label class="btn btn-outline-warning" for="driving4">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Driving Skills" id="driving5" value="5">
+                                                <label class="btn btn-outline-warning" for="driving5">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Customer Service -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Customer Service</label>
+                                        <div class="rating-stars">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="Customer Service" id="service1" value="1" required>
+                                                <label class="btn btn-outline-warning" for="service1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Customer Service" id="service2" value="2">
+                                                <label class="btn btn-outline-warning" for="service2">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Customer Service" id="service3" value="3">
+                                                <label class="btn btn-outline-warning" for="service3">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Customer Service" id="service4" value="4">
+                                                <label class="btn btn-outline-warning" for="service4">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                                
+                                                <input type="radio" class="btn-check" name="Customer Service" id="service5" value="5">
+                                                <label class="btn btn-outline-warning" for="service5">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed Comment -->
+                            <div class="mb-4">
+                                <label for="detailedComment" class="form-label">Detailed Feedback (optional)</label>
+                                <textarea class="form-control" id="detailedComment" name="detailedComment" 
+                                          rows="4" maxlength="500" 
+                                          placeholder="Share your detailed experience..."></textarea>
+                                <div class="form-text">
+                                    Maximum 500 characters
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Submit Detailed Review
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize form validation
+            const forms = document.querySelectorAll('.needs-validation');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            });
+            
+            // Handle review type selection
+            const reviewTypeInputs = document.querySelectorAll('input[name="reviewType"]');
+            const quickReviewForm = document.getElementById('quickReviewForm');
+            const detailedReviewForm = document.getElementById('detailedReviewForm');
+            
+            reviewTypeInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (this.value === 'quick') {
+                        quickReviewForm.classList.remove('d-none');
+                        detailedReviewForm.classList.add('d-none');
+                    } else {
+                        quickReviewForm.classList.add('d-none');
+                        detailedReviewForm.classList.remove('d-none');
+                    }
+                });
+            });
+            
+            // Handle star rating hover effects
+            const ratingGroups = document.querySelectorAll('.rating-stars .btn-group');
+            ratingGroups.forEach(group => {
+                const labels = group.querySelectorAll('label');
+                const inputs = group.querySelectorAll('input');
+                
+                labels.forEach((label, index) => {
+                    label.addEventListener('mouseenter', function() {
+                        // Fill stars up to current hover
+                        labels.forEach((l, i) => {
+                            if (i <= index) {
+                                l.classList.add('active');
+                            } else {
+                                l.classList.remove('active');
+                            }
+                        });
+                    });
+                    
+                    label.addEventListener('mouseleave', function() {
+                        // Reset stars to selected rating
+                        const selectedInput = group.querySelector('input:checked');
+                        if (selectedInput) {
+                            const selectedIndex = Array.from(inputs).indexOf(selectedInput);
+                            labels.forEach((l, i) => {
+                                if (i <= selectedIndex) {
+                                    l.classList.add('active');
+                                } else {
+                                    l.classList.remove('active');
+                                }
+                            });
+                        } else {
+                            labels.forEach(l => l.classList.remove('active'));
+                        }
+                    });
+                });
+                
+                inputs.forEach((input, index) => {
+                    input.addEventListener('change', function() {
+                        labels.forEach((label, i) => {
+                            if (i <= index) {
+                                label.classList.add('active');
+                            } else {
+                                label.classList.remove('active');
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    </script>
+    
+    <style>
+        .rating-stars .btn-group {
+            display: inline-flex;
+        }
+        
+        .rating-stars .btn {
+            padding: 0.5rem;
+        }
+        
+        .rating-stars .btn i {
+            font-size: 1.5rem;
+        }
+        
+        .rating-stars .btn.active {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #fff;
+        }
+        
+        .category-ratings .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-ratings .rating-stars {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</body>
+</html> 

@@ -1,0 +1,2 @@
+# Vehicle Details
+# Format: vehicleId,model,licensePlate,driverId,status 

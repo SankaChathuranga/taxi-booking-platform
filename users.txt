@@ -1,0 +1,1 @@
+{"userId":"USER001","username":"IT24103524@my.sliit.lk","password":"123456","email":"IT24103524@my.sliit.lk","phoneNumber":null,"fullName":"sanka chathuranga","address":null,"userType":"PASSENGER","paymentMethod":null,"walletBalance":0.0,"totalRides":0,"validPhoneNumber":false,"validEmail":true}

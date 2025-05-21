@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Review Details - Taxi Booking System</title>
+</head>
+<body>
+    <section class="container py-4">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Review Details</h2>
+                    <div class="btn-group">
+                        <a th:href="@{/reviews}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Reviews
+                        </a>
+                        
+                        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                           th:href="@{/reviews/{id}/edit(id=${review.reviewId})}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit Review
+                        </a>
+                        
+                        <button th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                                type="button" 
+                                class="btn btn-outline-danger"
+                                onclick="deleteReview()">
+                            <i class="bi bi-trash me-2"></i>Delete Review
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Review Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <!-- Rating and Status -->
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="rating-stars" th:attr="data-rating=${review.rating}">
+                                <i class="bi bi-star-fill text-warning" th:each="i : ${#numbers.sequence(1, review.rating)}"></i>
+                                <i class="bi bi-star text-warning" th:each="i : ${#numbers.sequence(review.rating + 1, 5)}"></i>
+                                <span class="ms-2" th:text="${review.rating} + ' out of 5'"></span>
+                            </div>
+                            
+                            <span class="badge" th:classappend="${review.status == 'APPROVED' ? 'bg-success' : 
+                                                                 (review.status == 'REJECTED' ? 'bg-danger' : 'bg-warning')}"
+                                  th:text="${review.status}"></span>
+                        </div>
+                        
+                        <!-- Review Content -->
+                        <div class="mb-4">
+                            <h5 class="card-title">Review</h5>
+                            <p class="card-text" th:text="${review.type == 'quick' ? review.shortComment : review.detailedComment}"></p>
+                            
+                            <!-- Category Ratings (Detailed Review) -->
+                            <div th:if="${review.type == 'detailed'}" class="mt-4">
+                                <h6 class="card-subtitle mb-3">Category Ratings</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6" th:each="category : ${review.categoryRatings}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted" th:text="${category.key}"></span>
+                                            <div class="rating-stars" th:attr="data-rating=${category.value}">
+                                                <i class="bi bi-star-fill text-warning" th:each="i : ${#numbers.sequence(1, category.value)}"></i>
+                                                <i class="bi bi-star text-warning" th:each="i : ${#numbers.sequence(category.value + 1, 5)}"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Review Metadata -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">Review Information</h6>
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-4">Type</dt>
+                                            <dd class="col-sm-8" th:text="${review.type == 'quick' ? 'Quick Review' : 'Detailed Review'}"></dd>
+                                            
+                                            <dt class="col-sm-4">Date</dt>
+                                            <dd class="col-sm-8" th:text="${#temporals.format(review.reviewTime, 'MMM d, yyyy HH:mm')}"></dd>
+                                            
+                                            <dt class="col-sm-4" th:if="${review.edited}">Last Edited</dt>
+                                            <dd class="col-sm-8" th:if="${review.edited}" 
+                                                th:text="${#temporals.format(review.lastEditedTime, 'MMM d, yyyy HH:mm')}"></dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">Booking Information</h6>
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-4">Booking ID</dt>
+                                            <dd class="col-sm-8">
+                                                <a th:href="@{/bookings/{id}(id=${review.bookingId})}" 
+                                                   class="text-decoration-none" 
+                                                   th:text="${review.bookingId}"></a>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Driver</dt>
+                                            <dd class="col-sm-8">
+                                                <a th:href="@{/drivers/{id}(id=${review.driverId})}" 
+                                                   class="text-decoration-none" 
+                                                   th:text="${review.driverName}"></a>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Customer</dt>
+                                            <dd class="col-sm-8">
+                                                <a th:href="@{/customers/{id}(id=${review.customerId})}" 
+                                                   class="text-decoration-none" 
+                                                   th:text="${review.customerName}"></a>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Status Update Card (Admin Only) -->
+                <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Update Status</h5>
+                        <form th:action="@{/reviews/{id}/status(id=${review.reviewId})}" method="post" class="mb-0">
+                            <div class="mb-3">
+                                <select class="form-select" name="status" required>
+                                    <option value="PENDING" th:selected="${review.status == 'PENDING'}">Pending</option>
+                                    <option value="APPROVED" th:selected="${review.status == 'APPROVED'}">Approved</option>
+                                    <option value="REJECTED" th:selected="${review.status == 'REJECTED'}">Rejected</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check-circle me-2"></i>Update Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Driver Stats Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Driver Statistics</h5>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h3 class="mb-1" th:text="${driverStats.totalReviews}">0</h3>
+                                    <p class="text-muted mb-0">Total Reviews</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h3 class="mb-1" th:text="${#numbers.formatDecimal(driverStats.averageRating, 1, 1)}">0.0</h3>
+                                    <p class="text-muted mb-0">Average Rating</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Category Averages (Detailed Reviews) -->
+                            <div class="col-12" th:if="${not #maps.isEmpty(driverStats.categoryAverages)}">
+                                <h6 class="card-subtitle mb-3">Category Averages</h6>
+                                <div class="category-averages">
+                                    <div class="mb-2" th:each="category : ${driverStats.categoryAverages}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted" th:text="${category.key}"></span>
+                                            <div class="rating-stars" th:attr="data-rating=${#numbers.formatDecimal(category.value, 1, 1)}">
+                                                <i class="bi bi-star-fill text-warning" 
+                                                   th:each="i : ${#numbers.sequence(1, T(Math).floor(category.value))}"></i>
+                                                <i class="bi bi-star-half text-warning" 
+                                                   th:if="${category.value % 1 >= 0.5}"></i>
+                                                <i class="bi bi-star text-warning" 
+                                                   th:each="i : ${#numbers.sequence(T(Math).ceil(category.value) + 1, 5)}"></i>
+                                                <span class="ms-2" th:text="${#numbers.formatDecimal(category.value, 1, 1)}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Reviews Card -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Recent Reviews</h5>
+                            <a th:href="@{/reviews(driverId=${review.driverId})}" class="btn btn-sm btn-outline-primary">
+                                View All
+                            </a>
+                        </div>
+                        
+                        <div class="recent-reviews">
+                            <div th:each="recentReview : ${recentReviews}" class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="rating-stars" th:attr="data-rating=${recentReview.rating}">
+                                        <i class="bi bi-star-fill text-warning" th:each="i : ${#numbers.sequence(1, recentReview.rating)}"></i>
+                                        <i class="bi bi-star text-warning" th:each="i : ${#numbers.sequence(recentReview.rating + 1, 5)}"></i>
+                                    </div>
+                                    <small class="text-muted" th:text="${#temporals.format(recentReview.reviewTime, 'MMM d')}"></small>
+                                </div>
+                                <p class="mb-1" th:text="${recentReview.reviewSummary}"></p>
+                                <small class="text-muted">
+                                    by <a th:href="@{/customers/{id}(id=${recentReview.customerId})}" 
+                                         class="text-decoration-none" 
+                                         th:text="${recentReview.customerName}"></a>
+                                </small>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div th:if="${#lists.isEmpty(recentReviews)}" class="text-center text-muted py-3">
+                                <i class="bi bi-chat-square-text display-4"></i>
+                                <p class="mt-2 mb-0">No recent reviews</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form th:action="@{/reviews/{id}/delete(id=${review.reviewId})}" method="post">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        function deleteReview() {
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+    
+    <style>
+        .rating-stars {
+            display: inline-flex;
+            gap: 0.25rem;
+        }
+        
+        .rating-stars i {
+            font-size: 1.25rem;
+        }
+        
+        .category-averages .rating-stars i {
+            font-size: 1rem;
+        }
+        
+        .recent-reviews .rating-stars i {
+            font-size: 0.875rem;
+        }
+        
+        .card {
+            border: none;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+</body>
+</html> 

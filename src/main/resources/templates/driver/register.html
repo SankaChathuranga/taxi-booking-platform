@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(~{::title}, ~{::section}, ~{::script})}">
+<head>
+    <title>Driver Registration - Taxi Booking System</title>
+</head>
+<body>
+    <section th:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Driver Registration</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="nav nav-tabs mb-4" id="driverTypeTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" 
+                                            id="fulltime-tab" 
+                                            data-bs-toggle="tab" 
+                                            data-bs-target="#fulltime" 
+                                            type="button" 
+                                            role="tab" 
+                                            aria-controls="fulltime" 
+                                            aria-selected="true">
+                                        Full-Time Driver
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" 
+                                            id="parttime-tab" 
+                                            data-bs-toggle="tab" 
+                                            data-bs-target="#parttime" 
+                                            type="button" 
+                                            role="tab" 
+                                            aria-controls="parttime" 
+                                            aria-selected="false">
+                                        Part-Time Driver
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="driverTypeTabsContent">
+                                <!-- Full-Time Driver Form -->
+                                <div class="tab-pane fade show active" 
+                                     id="fulltime" 
+                                     role="tabpanel" 
+                                     aria-labelledby="fulltime-tab">
+                                    <form th:action="@{/drivers/register/fulltime}" 
+                                          method="post" 
+                                          th:object="${fullTimeDriver}"
+                                          class="needs-validation" 
+                                          novalidate>
+                                        <div class="row">
+                                            <!-- Personal Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Personal Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="fullName" class="form-label">Full Name</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="fullName" 
+                                                       th:field="*{fullName}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your full name.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="email" class="form-label">Email</label>
+                                                <input type="email" 
+                                                       class="form-control" 
+                                                       id="email" 
+                                                       th:field="*{email}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid email address.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                                <input type="tel" 
+                                                       class="form-control" 
+                                                       id="phoneNumber" 
+                                                       th:field="*{phoneNumber}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your phone number.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="password" class="form-label">Password</label>
+                                                <input type="password" 
+                                                       class="form-control" 
+                                                       id="password" 
+                                                       th:field="*{password}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a password.
+                                                </div>
+                                            </div>
+
+                                            <!-- Driver Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Driver Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="licenseNumber" class="form-label">License Number</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="licenseNumber" 
+                                                       th:field="*{licenseNumber}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your license number.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="yearsOfExperience" class="form-label">Years of Experience</label>
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="yearsOfExperience" 
+                                                       th:field="*{yearsOfExperience}" 
+                                                       min="0" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your years of experience.
+                                                </div>
+                                            </div>
+
+                                            <!-- Vehicle Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Vehicle Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="vehicleType" class="form-label">Vehicle Type</label>
+                                                <select class="form-select" 
+                                                        id="vehicleType" 
+                                                        th:field="*{vehicleType}" 
+                                                        required>
+                                                    <option value="">Select vehicle type</option>
+                                                    <option value="SEDAN">Sedan</option>
+                                                    <option value="SUV">SUV</option>
+                                                    <option value="VAN">Van</option>
+                                                    <option value="LUXURY">Luxury</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Please select a vehicle type.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="vehicleModel" class="form-label">Vehicle Model</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="vehicleModel" 
+                                                       th:field="*{vehicleModel}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your vehicle model.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="licensePlate" class="form-label">License Plate</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="licensePlate" 
+                                                       th:field="*{licensePlate}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your license plate number.
+                                                </div>
+                                            </div>
+
+                                            <!-- Full-Time Specific Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Full-Time Driver Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="shiftStart" class="form-label">Shift Start Time</label>
+                                                <input type="time" 
+                                                       class="form-control" 
+                                                       id="shiftStart" 
+                                                       th:field="*{shiftStart}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your shift start time.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="shiftEnd" class="form-label">Shift End Time</label>
+                                                <input type="time" 
+                                                       class="form-control" 
+                                                       id="shiftEnd" 
+                                                       th:field="*{shiftEnd}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your shift end time.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="baseSalary" class="form-label">Base Salary</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" 
+                                                           class="form-control" 
+                                                           id="baseSalary" 
+                                                           th:field="*{baseSalary}" 
+                                                           min="0" 
+                                                           step="0.01" 
+                                                           required>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Please provide your base salary.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="commissionRate" class="form-label">Commission Rate (%)</label>
+                                                <div class="input-group">
+                                                    <input type="number" 
+                                                           class="form-control" 
+                                                           id="commissionRate" 
+                                                           th:field="*{commissionRate}" 
+                                                           min="0" 
+                                                           max="100" 
+                                                           step="0.01" 
+                                                           required>
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Please provide your commission rate.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="submit" class="btn btn-primary">Register as Full-Time Driver</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Part-Time Driver Form -->
+                                <div class="tab-pane fade" 
+                                     id="parttime" 
+                                     role="tabpanel" 
+                                     aria-labelledby="parttime-tab">
+                                    <form th:action="@{/drivers/register/parttime}" 
+                                          method="post" 
+                                          th:object="${partTimeDriver}"
+                                          class="needs-validation" 
+                                          novalidate>
+                                        <div class="row">
+                                            <!-- Personal Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Personal Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptFullName" class="form-label">Full Name</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="ptFullName" 
+                                                       th:field="*{fullName}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your full name.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptEmail" class="form-label">Email</label>
+                                                <input type="email" 
+                                                       class="form-control" 
+                                                       id="ptEmail" 
+                                                       th:field="*{email}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid email address.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptPhoneNumber" class="form-label">Phone Number</label>
+                                                <input type="tel" 
+                                                       class="form-control" 
+                                                       id="ptPhoneNumber" 
+                                                       th:field="*{phoneNumber}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your phone number.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptPassword" class="form-label">Password</label>
+                                                <input type="password" 
+                                                       class="form-control" 
+                                                       id="ptPassword" 
+                                                       th:field="*{password}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a password.
+                                                </div>
+                                            </div>
+
+                                            <!-- Driver Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Driver Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptLicenseNumber" class="form-label">License Number</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="ptLicenseNumber" 
+                                                       th:field="*{licenseNumber}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your license number.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="ptYearsOfExperience" class="form-label">Years of Experience</label>
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="ptYearsOfExperience" 
+                                                       th:field="*{yearsOfExperience}" 
+                                                       min="0" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your years of experience.
+                                                </div>
+                                            </div>
+
+                                            <!-- Vehicle Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Vehicle Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="ptVehicleType" class="form-label">Vehicle Type</label>
+                                                <select class="form-select" 
+                                                        id="ptVehicleType" 
+                                                        th:field="*{vehicleType}" 
+                                                        required>
+                                                    <option value="">Select vehicle type</option>
+                                                    <option value="SEDAN">Sedan</option>
+                                                    <option value="SUV">SUV</option>
+                                                    <option value="VAN">Van</option>
+                                                    <option value="LUXURY">Luxury</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Please select a vehicle type.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="ptVehicleModel" class="form-label">Vehicle Model</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="ptVehicleModel" 
+                                                       th:field="*{vehicleModel}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your vehicle model.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="ptLicensePlate" class="form-label">License Plate</label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="ptLicensePlate" 
+                                                       th:field="*{licensePlate}" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your license plate number.
+                                                </div>
+                                            </div>
+
+                                            <!-- Part-Time Specific Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <h5>Part-Time Driver Information</h5>
+                                                <hr>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="preferredHours" class="form-label">Preferred Hours per Week</label>
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="preferredHours" 
+                                                       th:field="*{preferredHours}" 
+                                                       min="1" 
+                                                       max="40" 
+                                                       required>
+                                                <div class="invalid-feedback">
+                                                    Please provide your preferred hours per week.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="hourlyRate" class="form-label">Hourly Rate</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" 
+                                                           class="form-control" 
+                                                           id="hourlyRate" 
+                                                           th:field="*{hourlyRate}" 
+                                                           min="0" 
+                                                           step="0.01" 
+                                                           required>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Please provide your hourly rate.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12 mb-3">
+                                                <label for="availability" class="form-label">Availability</label>
+                                                <div class="row">
+                                                    <div class="col-md-3 mb-2" th:each="day : ${T(java.time.DayOfWeek).values()}">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" 
+                                                                   type="checkbox" 
+                                                                   th:field="*{availability}" 
+                                                                   th:value="${day}" 
+                                                                   th:id="'availability-' + ${day}">
+                                                            <label class="form-check-label" 
+                                                                   th:for="'availability-' + ${day}" 
+                                                                   th:text="${day}">Day</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Please select your availability.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="submit" class="btn btn-primary">Register as Part-Time Driver</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script th:fragment="script">
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+
+        // Time input validation for full-time driver
+        document.getElementById('shiftStart').addEventListener('change', function() {
+            var start = this.value;
+            var end = document.getElementById('shiftEnd').value;
+            if (start && end && start >= end) {
+                this.setCustomValidity('Shift start time must be before end time');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('shiftEnd').addEventListener('change', function() {
+            var end = this.value;
+            var start = document.getElementById('shiftStart').value;
+            if (start && end && start >= end) {
+                this.setCustomValidity('Shift end time must be after start time');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        // Availability validation for part-time driver
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                if (this.id === 'parttime') {
+                    var availability = document.querySelectorAll('input[name="availability"]:checked');
+                    if (availability.length === 0) {
+                        event.preventDefault();
+                        alert('Please select at least one day of availability');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(~{::title}, ~{::section}, ~{::script})}">
+<head>
+    <title th:text="${driver.fullName + ' - Driver Profile'}">Driver Profile - Taxi Booking System</title>
+</head>
+<body>
+    <section th:fragment="content">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <img th:src="${driver.profilePicture ?: '/images/default-driver.png'}" 
+                                 class="rounded-circle img-fluid mb-3" 
+                                 style="width: 150px; height: 150px; object-fit: cover;"
+                                 alt="Driver Profile Picture">
+                            <h3 th:text="${driver.fullName}">Driver Name</h3>
+                            <p class="text-muted mb-1">
+                                <span class="badge" 
+                                      th:classappend="${driver.driverType == T(com.taxibooking.model.DriverType).FULL_TIME ? 'bg-primary' : 'bg-info'}"
+                                      th:text="${driver.driverType}">Driver Type</span>
+                            </p>
+                            <div class="d-flex justify-content-center mb-2">
+                                <div class="me-3">
+                                    <span class="badge bg-success" th:text="${driver.available ? 'Available' : 'Busy'}">Status</span>
+                                </div>
+                                <div class="rating">
+                                    <span th:text="${#numbers.formatDecimal(driver.rating, 1, 1)}">4.5</span>
+                                    <div class="ms-1 d-inline">
+                                        <i class="bi bi-star-fill text-warning" 
+                                           th:each="i : ${#numbers.sequence(1, 5)}"
+                                           th:classappend="${i <= driver.rating ? 'text-warning' : 'text-muted'}"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button type="button" 
+                                        class="btn btn-outline-primary me-2"
+                                        th:onclick="'toggleAvailability(\'' + ${driver.userId} + '\', ' + !${driver.available} + ')'"
+                                        th:text="${driver.available ? 'Set Busy' : 'Set Available'}">
+                                    Toggle Status
+                                </button>
+                                <a th:href="@{/drivers/{id}/edit(id=${driver.userId})}" 
+                                   class="btn btn-outline-secondary">Edit Profile</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Contact Information</h5>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Email</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.email}">email@example.com</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Phone</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.phoneNumber}">+1234567890</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Location</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.currentLocation ?: 'Not specified'}">Current Location</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Driver Statistics</h5>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Total Rides</p>
+                                    <h4 th:text="${driver.totalRides}">100</h4>
+                                </div>
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Rating</p>
+                                    <h4 th:text="${#numbers.formatDecimal(driver.rating, 1, 1)}">4.5</h4>
+                                </div>
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Experience</p>
+                                    <h4 th:text="${driver.yearsOfExperience + ' years'}">5 years</h4>
+                                </div>
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Status</p>
+                                    <h4>
+                                        <span class="badge" 
+                                              th:classappend="${driver.available ? 'bg-success' : 'bg-danger'}"
+                                              th:text="${driver.available ? 'Available' : 'Busy'}">Status</span>
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Vehicle Information</h5>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Vehicle Type</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.vehicleType}">Sedan</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">License Plate</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.licensePlate}">ABC123</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Vehicle Model</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-muted mb-0" th:text="${driver.vehicleModel}">Toyota Camry</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Reviews</h5>
+                            <div th:if="${not #lists.isEmpty(driver.reviews)}" class="list-group">
+                                <div th:each="review : ${driver.reviews}" class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1" th:text="${review.customerName}">Customer Name</h6>
+                                        <small th:text="${#temporals.format(review.date, 'dd/MM/yyyy')}">Date</small>
+                                    </div>
+                                    <div class="mb-1">
+                                        <i class="bi bi-star-fill text-warning" 
+                                           th:each="i : ${#numbers.sequence(1, 5)}"
+                                           th:classappend="${i <= review.rating ? 'text-warning' : 'text-muted'}"></i>
+                                    </div>
+                                    <p class="mb-1" th:text="${review.comment}">Review comment</p>
+                                </div>
+                            </div>
+                            <div th:if="${#lists.isEmpty(driver.reviews)}" class="text-center text-muted">
+                                <p>No reviews yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script th:fragment="script">
+        function toggleAvailability(driverId, newStatus) {
+            fetch(`/drivers/${driverId}/availability?isAvailable=${newStatus}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to update driver availability');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update driver availability');
+            });
+        }
+        
+        // Add Bootstrap Icons
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css';
+        document.head.appendChild(link);
+    </script>
+</body>
+</html> 
