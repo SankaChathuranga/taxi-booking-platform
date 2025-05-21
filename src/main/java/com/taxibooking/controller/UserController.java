@@ -6,6 +6,7 @@ import com.taxibooking.model.Driver;
 import com.taxibooking.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,12 @@ import java.util.Optional;
 public class UserController {
     
     private final UserFileService userFileService;
+    private final PasswordEncoder passwordEncoder;
     
     @Autowired
-    public UserController(UserFileService userFileService) {
+    public UserController(UserFileService userFileService, PasswordEncoder passwordEncoder) {
         this.userFileService = userFileService;
+        this.passwordEncoder = passwordEncoder;
     }
     
     // Registration endpoints
@@ -37,6 +40,8 @@ public class UserController {
     public String registerPassenger(@ModelAttribute Passenger passenger) {
         try {
             passenger.setUserId(userFileService.generateUserId());
+            // Encode password before saving
+            passenger.setPassword(passwordEncoder.encode(passenger.getPassword()));
             userFileService.saveUser(passenger);
             return "redirect:/users/login";
         } catch (IOException e) {
@@ -48,6 +53,8 @@ public class UserController {
     public String registerDriver(@ModelAttribute Driver driver) {
         try {
             driver.setUserId(userFileService.generateUserId());
+            // Encode password before saving
+            driver.setPassword(passwordEncoder.encode(driver.getPassword()));
             userFileService.saveUser(driver);
             return "redirect:/users/login";
         } catch (IOException e) {
@@ -82,17 +89,18 @@ public class UserController {
 
             User newUser;
             String userId = userFileService.generateUserId();
+            String encodedPassword = passwordEncoder.encode(password);
             
             // Create appropriate user type object
             switch (userType) {
                 case PASSENGER:
-                    newUser = new Passenger(userId, email, password, email, null, fullName, null);
+                    newUser = new Passenger(userId, email, encodedPassword, email, null, fullName, null);
                     break;
                 case DRIVER:
-                    newUser = new Driver(userId, email, password, email, null, fullName, null, null, null);
+                    newUser = new Driver(userId, email, encodedPassword, email, null, fullName, null, null, null);
                     break;
                 case ADMIN:
-                    newUser = new User(userId, email, password, email, null, fullName, null, userType);
+                    newUser = new User(userId, email, encodedPassword, email, null, fullName, null, userType);
                     break;
                 default:
                     model.addAttribute("error", "Invalid user type");
@@ -117,47 +125,6 @@ public class UserController {
     @GetMapping("/login")
     public String showLoginForm() {
         return "user/login";
-    }
-    
-    @PostMapping("/login")
-    public String login(@RequestParam String email, 
-                       @RequestParam String password,
-                       HttpSession session,
-                       Model model) {
-        try {
-            Optional<User> userOpt = userFileService.getUserByEmail(email);
-
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                if (user.getPassword().equals(password)) {
-                    // Store user in session
-                    session.setAttribute("userId", user.getUserId());
-                    session.setAttribute("userType", user.getUserType());
-                    
-                    // Redirect based on user type
-                    switch (user.getUserType()) {
-                        case PASSENGER:
-                            return "redirect:/passenger/dashboard";
-                        case DRIVER:
-                            return "redirect:/driver/dashboard";
-                        case ADMIN:
-                            return "redirect:/admin/dashboard";
-                        default:
-                            return "redirect:/";
-                    }
-                }
-            }
-
-            model.addAttribute("error", "Invalid email or password");
-            model.addAttribute("email", email);
-            return "user/login";
-        } catch (IOException e) {
-            System.err.println("Error during login: " + e.getMessage());
-            e.printStackTrace();
-            model.addAttribute("error", "Error during login: " + e.getMessage());
-            model.addAttribute("email", email);
-            return "user/login";
-        }
     }
     
     // Profile management endpoints
