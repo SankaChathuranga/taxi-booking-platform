@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxiapp5 Driver Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js"></script>
+</head>
+<body class="bg-gray-100">
+<div id="root" class="container mx-auto p-4"></div>
+<script type="text/babel" data-type="module">
+    const { useState, useEffect } = React;
+
+    function App() {
+        const [drivers, setDrivers] = useState([]);
+        const [name, setName] = useState('');
+        const [rating, setRating] = useState(0);
+        const [editId, setEditId] = useState(null);
+        const [assignedDriver, setAssignedDriver] = useState(null);
+        const [error, setError] = useState(null);
+
+        const fetchDrivers = async () => {
+            try {
+                const response = await fetch('/api/drivers');
+                if (!response.ok) throw new Error('Failed to fetch drivers');
+                const data = await response.json();
+                setDrivers(data);
+                setError(null);
+            } catch (error) {
+                console.error(error);
+                setError('Error fetching drivers');
+            }
+        };
+
+        useEffect(() => {
+            fetchDrivers();
+        }, []);
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (!name || rating < 0 || rating > 5) {
+                setError('Please enter a valid name and rating (0-5)');
+                return;
+            }
+            const driver = { name, rating: parseFloat(rating) };
+
+            try {
+                if (editId) {
+                    const response = await fetch(`/api/drivers/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(driver),
+                    });
+                    if (!response.ok) throw new Error('Failed to update driver');
+                    setEditId(null);
+                } else {
+                    const response = await fetch('/api/drivers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(driver),
+                    });
+                    if (!response.ok) throw new Error('Failed to create driver');
+                }
+                setName('');
+                setRating(0);
+                setError(null);
+                fetchDrivers();
+            } catch (error) {
+                console.error(error);
+                setError('Error saving driver');
+            }
+        };
+
+        const handleEdit = (driver) => {
+            setEditId(driver.id);
+            setName(driver.name);
+            setRating(driver.rating);
+            setError(null);
+        };
+
+        const handleDelete = async (id) => {
+            try {
+                const response = await fetch(`/api/drivers/${id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('Failed to delete driver');
+                fetchDrivers();
+                setError(null);
+            } catch (error) {
+                console.error(error);
+                setError('Error deleting driver');
+            }
+        };
+
+        const handleAssign = async () => {
+            try {
+                const response = await fetch('/api/drivers/assign');
+                if (!response.ok) throw new Error('Failed to assign driver');
+                const data = await response.json();
+                setAssignedDriver(data);
+                setError(null);
+                fetchDrivers();
+            } catch (error) {
+                console.error(error);
+                setError('Error assigning driver');
+            }
+        };
+
+        return (
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-3xl font-bold mb-4">Taxiapp5 Driver Management</h1>
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                <div className="bg-white p-6 rounded shadow mb-4">
+                    <h2 className="text-xl font-semibold mb-4">{editId ? 'Edit Driver' : 'Add Driver'}</h2>
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Driver Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                        />
+                        <input
+                            type="number"
+                            placeholder="Rating (0-5)"
+                            value={rating}
+                            onChange={(e) => setRating(e.target.value)}
+                            min="0"
+                            max="5"
+                            step="0.1"
+                            className="w-full p-2 border rounded"
+                        />
+                        <button
+                            onClick={handleSubmit}
+                            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                        >
+                            {editId ? 'Update Driver' : 'Add Driver'}
+                        </button>
+                    </div>
+                </div>
+                <div className="mb-4">
+                    <button
+                        onClick={handleAssign}
+                        className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+                    >
+                        Assign Driver
+                    </button>
+                    {assignedDriver && (
+                        <p className="mt-2">
+                            Assigned Driver: {assignedDriver.name} (Rating: {assignedDriver.rating})
+                        </p>
+                    )}
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Drivers List</h2>
+                <ul className="space-y-2">
+                    {drivers.map((driver) => (
+                        <li key={driver.id} className="flex justify-between bg-white p-4 rounded shadow">
+                                <span>
+                                    {driver.name} - Rating: {driver.rating}
+                                </span>
+                            <div>
+                                <button
+                                    onClick={() => handleEdit(driver)}
+                                    className="bg-yellow-500 text-white p-1 rounded mr-2 hover:bg-yellow-600"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(driver.id)}
+                                    className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
