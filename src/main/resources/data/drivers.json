@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [
     {
         "id": "d1e2f3g4",
@@ -9,3 +10,6 @@
         "availability": true
     }
 ]
+=======
+[{"id":"","userId":"user_xg2uflh1","fullName":"ewrgewrg","contactNumber":"ewrgerg","licensePlate":"wergewrg","vehicleModel":"wergwerg","currentLocation":"werewrg","rating":4.0,"availability":true}]
+>>>>>>> ff35299 (FIXED SOME ERRORS)

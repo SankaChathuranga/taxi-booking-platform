@@ -47,6 +47,27 @@ body {
     background-color: #34495e;
 }
 
+<<<<<<< HEAD
+=======
+.admin-link {
+    background-color: #e74c3c;
+    font-weight: bold;
+}
+
+.admin-link:hover {
+    background-color: #c0392b !important;
+}
+
+.payment-history-link {
+    background-color: #3498db;
+    font-weight: bold;
+}
+
+.payment-history-link:hover {
+    background-color: #2980b9 !important;
+}
+
+>>>>>>> ff35299 (FIXED SOME ERRORS)
 /* Main content styles */
 main {
     max-width: 1200px;

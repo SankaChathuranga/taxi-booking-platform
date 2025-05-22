@@ -5,6 +5,12 @@ let currentDriverEntityId = null; // Store the driver entity ID for the logged-i
 
 // Navigation handling
 document.addEventListener('DOMContentLoaded', () => {
+<<<<<<< HEAD
+=======
+    // Add Admin Panel button to public navigation
+    addAdminPanelButton();
+    
+>>>>>>> ff35299 (FIXED SOME ERRORS)
     // Check for existing session
     const user = localStorage.getItem('user');
     if (user) {
@@ -31,6 +37,33 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFormHandlers();
 });
 
+<<<<<<< HEAD
+=======
+// Add Admin Panel button to the navigation
+function addAdminPanelButton() {
+    const publicNav = document.querySelector('.public-nav');
+    if (publicNav) {
+        // Check if the admin button already exists
+        if (!document.querySelector('.admin-link')) {
+            const adminLink = document.createElement('a');
+            adminLink.href = '/admin/index.html';
+            adminLink.className = 'admin-link';
+            adminLink.textContent = 'Admin Panel';
+            publicNav.appendChild(adminLink);
+        }
+        
+        // Add Payment History link
+        if (!document.querySelector('.payment-history-link')) {
+            const paymentHistoryLink = document.createElement('a');
+            paymentHistoryLink.href = '/payment-history.html';
+            paymentHistoryLink.className = 'payment-history-link';
+            paymentHistoryLink.textContent = 'Payment History';
+            publicNav.appendChild(paymentHistoryLink);
+        }
+    }
+}
+
+>>>>>>> ff35299 (FIXED SOME ERRORS)
 // Navigation functions
 function updateNavigation() {
     // Hide all navigation groups
@@ -42,15 +75,42 @@ function updateNavigation() {
     switch (currentRole) {
         case 'CUSTOMER':
             document.querySelector('.user-nav').style.display = 'flex';
+<<<<<<< HEAD
             break;
         case 'DRIVER':
             document.querySelector('.driver-nav').style.display = 'flex';
+=======
+            // Add Admin Panel button to user nav
+            addAdminButtonToNav('.user-nav');
+            break;
+        case 'DRIVER':
+            document.querySelector('.driver-nav').style.display = 'flex';
+            // Add Admin Panel button to driver nav
+            addAdminButtonToNav('.driver-nav');
+>>>>>>> ff35299 (FIXED SOME ERRORS)
             break;
         case 'ADMIN':
             document.querySelector('.admin-nav').style.display = 'flex';
             break;
         default:
             document.querySelector('.public-nav').style.display = 'flex';
+<<<<<<< HEAD
+=======
+            // Add Admin Panel button to public nav (already done in DOMContentLoaded)
+            addAdminPanelButton();
+    }
+}
+
+// Helper function to add Admin Panel button to any navigation bar
+function addAdminButtonToNav(navSelector) {
+    const nav = document.querySelector(navSelector);
+    if (nav && !nav.querySelector('.admin-link')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = '/admin/index.html';
+        adminLink.className = 'admin-link';
+        adminLink.textContent = 'Admin Panel';
+        nav.appendChild(adminLink);
+>>>>>>> ff35299 (FIXED SOME ERRORS)
     }
 }
 
@@ -186,8 +246,17 @@ function setupFormHandlers() {
                 if (result.success) {
                     showNotification(result.message || 'Booking successful!', 'success');
                     bookingForm.reset();
+<<<<<<< HEAD
                     loadSectionData('user-dashboard');
                     loadSectionData('user-history');
+=======
+                    
+                    // Get the booking ID from the response
+                    const bookingId = result.data.id;
+                    
+                    // Redirect to payment processing page with the booking ID
+                    window.location.href = `/payment-process.html?bookingId=${bookingId}`;
+>>>>>>> ff35299 (FIXED SOME ERRORS)
                 } else {
                     showNotification(result.message || 'An error occurred during booking', 'error');
                 }

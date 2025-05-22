@@ -9,8 +9,15 @@ import com.taxiservice.model.User;
 import com.taxiservice.repository.BookingRepository;
 import com.taxiservice.repository.DriverRepository;
 import com.taxiservice.repository.UserRepository;
+<<<<<<< HEAD
 import org.springframework.stereotype.Service;
 import java.util.List;
+=======
+import com.taxiservice.util.DriverSorter;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.UUID;
+>>>>>>> ff35299 (FIXED SOME ERRORS)
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +40,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+<<<<<<< HEAD
     public List<Driver> getAllDrivers() {
         return driverRepository.findAll();
     }
@@ -40,6 +48,73 @@ public class AdminService {
     public Driver approveDriver(String driverId) {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new TaxiServiceException("Driver not found"));
+=======
+    public List<Driver> getAllDrivers(String sortBy, String sortOrder) {
+        List<Driver> drivers = driverRepository.findAll();
+        
+        if (sortBy != null && sortBy.equalsIgnoreCase("rating")) {
+            boolean ascending = sortOrder != null && sortOrder.equalsIgnoreCase("asc");
+            DriverSorter.sortByRating(drivers, ascending);
+        }
+        
+        return drivers;
+    }
+    
+    public Driver getDriverById(String id) {
+        return driverRepository.findById(id)
+                .orElseThrow(() -> new TaxiServiceException("Driver not found with id: " + id));
+    }
+    
+    public Driver createDriver(Driver driver) {
+        if (driver.getUserId() == null || driver.getUserId().trim().isEmpty()) {
+            throw new TaxiServiceException("User ID is required");
+        }
+        
+        // Set default values if not provided
+        if (driver.getId() == null) {
+            driver.setId(UUID.randomUUID().toString());
+        }
+        if (driver.getRating() == 0) {
+            driver.setRating(5.0); // Default rating
+        }
+        
+        return driverRepository.save(driver);
+    }
+    
+    public Driver updateDriver(String id, Driver driverDetails) {
+        Driver existingDriver = getDriverById(id);
+        
+        // Update only the fields that are allowed to be updated
+        if (driverDetails.getFullName() != null) {
+            existingDriver.setFullName(driverDetails.getFullName());
+        }
+        if (driverDetails.getContactNumber() != null) {
+            existingDriver.setContactNumber(driverDetails.getContactNumber());
+        }
+        if (driverDetails.getLicensePlate() != null) {
+            existingDriver.setLicensePlate(driverDetails.getLicensePlate());
+        }
+        if (driverDetails.getVehicleModel() != null) {
+            existingDriver.setVehicleModel(driverDetails.getVehicleModel());
+        }
+        if (driverDetails.getCurrentLocation() != null) {
+            existingDriver.setCurrentLocation(driverDetails.getCurrentLocation());
+        }
+        if (driverDetails.getRating() > 0) {
+            existingDriver.setRating(driverDetails.getRating());
+        }
+        
+        return driverRepository.save(existingDriver);
+    }
+    
+    public void deleteDriver(String id) {
+        // Just pass the ID to delete
+        driverRepository.delete(id);
+    }
+
+    public Driver approveDriver(String driverId) {
+        Driver driver = getDriverById(driverId);
+>>>>>>> ff35299 (FIXED SOME ERRORS)
         
         User user = userRepository.findById(driver.getUserId())
                 .orElseThrow(() -> new TaxiServiceException("User not found"));

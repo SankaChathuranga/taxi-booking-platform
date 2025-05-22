@@ -5,10 +5,15 @@ import com.taxiservice.model.Driver;
 import com.taxiservice.service.DriverService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+<<<<<<< HEAD
 
 import java.util.List;
 
 @lombok.Data
+=======
+import java.util.List;
+
+>>>>>>> ff35299 (FIXED SOME ERRORS)
 @RestController
 @RequestMapping("/api/drivers")
 public class DriverController {

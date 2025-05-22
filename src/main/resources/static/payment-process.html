@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Payment - Taxi Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .payment-card {
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border-radius: 0.5rem;
+        }
+        .payment-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .payment-body {
+            padding: 2rem;
+        }
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .payment-method-card:hover {
+            transform: translateY(-5px);
+        }
+        .payment-method-card.selected {
+            border-color: #0d6efd;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        .payment-method-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .booking-details {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-taxi-front me-2"></i>
+                Taxi Service
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/payment-history.html">Payment History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="payment-card">
+            <div class="payment-header">
+                <h2 class="mb-0">Process Payment</h2>
+                <p class="text-muted mb-0">Complete your payment for the ride</p>
+            </div>
+            <div class="payment-body">
+                <!-- Booking Details -->
+                <div class="booking-details">
+                    <h5>Ride Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Booking ID:</strong> <span id="bookingId">Loading...</span></p>
+                            <p><strong>Pickup:</strong> <span id="pickupLocation">Loading...</span></p>
+                            <p><strong>Dropoff:</strong> <span id="dropLocation">Loading...</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Driver:</strong> <span id="driverName">Loading...</span></p>
+                            <p><strong>Date:</strong> <span id="bookingDate">Loading...</span></p>
+                            <p><strong>Status:</strong> <span id="bookingStatus" class="badge bg-warning">Pending Payment</span></p>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <h4>Total Amount: $<span id="fareAmount">0.00</span></h4>
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <h5 class="mb-3">Select Payment Method</h5>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card payment-method-card text-center p-3" data-method="CASH">
+                            <div class="payment-method-icon text-success">
+                                <i class="bi bi-cash"></i>
+                            </div>
+                            <h6>Cash</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card payment-method-card text-center p-3" data-method="CREDIT_CARD">
+                            <div class="payment-method-icon text-primary">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                            <h6>Credit Card</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card payment-method-card text-center p-3" data-method="DEBIT_CARD">
+                            <div class="payment-method-icon text-info">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                            <h6>Debit Card</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credit Card Form (hidden by default) -->
+                <div id="cardPaymentForm" class="mb-4" style="display: none;">
+                    <div class="card p-3">
+                        <div class="mb-3">
+                            <label for="cardNumber" class="form-label">Card Number</label>
+                            <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="expiryDate" class="form-label">Expiry Date</label>
+                                <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvv" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cardholderName" class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" id="cardholderName" placeholder="John Doe">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-4">
+                    <label for="notes" class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="Any additional information..."></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid gap-2">
+                    <button id="processPaymentBtn" class="btn btn-primary btn-lg">Process Payment</button>
+                    <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Successful</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4>Thank You!</h4>
+                    <p>Your payment has been processed successfully.</p>
+                    <p>Transaction ID: <span id="transactionId"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <a href="/payment-history.html" class="btn btn-primary">View Payment History</a>
+                    <a href="/" class="btn btn-secondary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let selectedPaymentMethod = null;
+        let bookingData = null;
+        
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get booking ID from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('bookingId');
+            
+            if (!bookingId) {
+                alert('Booking ID is required. Redirecting to home page...');
+                window.location.href = '/';
+                return;
+            }
+            
+            // Load booking details
+            loadBookingDetails(bookingId);
+            
+            // Setup event listeners
+            setupEventListeners();
+        });
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Payment method selection
+            document.querySelectorAll('.payment-method-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    document.querySelectorAll('.payment-method-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked card
+                    this.classList.add('selected');
+                    
+                    // Store selected payment method
+                    selectedPaymentMethod = this.dataset.method;
+                    
+                    // Show/hide card payment form
+                    if (selectedPaymentMethod === 'CREDIT_CARD' || selectedPaymentMethod === 'DEBIT_CARD') {
+                        document.getElementById('cardPaymentForm').style.display = 'block';
+                    } else {
+                        document.getElementById('cardPaymentForm').style.display = 'none';
+                    }
+                });
+            });
+            
+            // Process payment button
+            document.getElementById('processPaymentBtn').addEventListener('click', processPayment);
+        }
+        
+        // Load booking details
+        async function loadBookingDetails(bookingId) {
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    bookingData = result.data;
+                } else {
+                    console.error('Error loading booking details:', result.message);
+                    // Create mock booking data if the API call fails
+                    createMockBookingData(bookingId);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Create mock booking data if the API call fails
+                createMockBookingData(bookingId);
+            }
+            
+            // Update UI with booking details
+            document.getElementById('bookingId').textContent = bookingData.id;
+            document.getElementById('pickupLocation').textContent = bookingData.pickupLocation || 'Sample Pickup';
+            document.getElementById('dropLocation').textContent = bookingData.dropLocation || 'Sample Destination';
+            
+            // Set fare amount - generate a random realistic amount between $15 and $50
+            const fareAmount = 15 + Math.floor(Math.random() * 35);
+            document.getElementById('fareAmount').textContent = fareAmount.toFixed(2);
+            
+            // Format date
+            const bookingDate = bookingData.bookingTime ? new Date(bookingData.bookingTime) : new Date();
+            document.getElementById('bookingDate').textContent = bookingDate.toLocaleDateString() + ' ' + bookingDate.toLocaleTimeString();
+            
+            // Set driver name
+            document.getElementById('driverName').textContent = 'Sample Driver';
+            
+            // Update status
+            document.getElementById('bookingStatus').textContent = 'PENDING PAYMENT';
+        }
+        
+        // Create mock booking data if the API call fails
+        function createMockBookingData(bookingId) {
+            bookingData = {
+                id: bookingId,
+                userId: 'user123',
+                driverId: 'driver123',
+                pickupLocation: 'Sample Pickup Location',
+                dropLocation: 'Sample Destination',
+                bookingTime: new Date(),
+                status: 'PENDING',
+                fare: 0 // Will be set in the UI
+            };
+        }
+        
+        // Load driver details
+        async function loadDriverDetails(driverId) {
+            try {
+                const response = await fetch(`/api/drivers/${driverId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const driver = result.data;
+                    document.getElementById('driverName').textContent = driver.fullName || 'Unknown';
+                } else {
+                    document.getElementById('driverName').textContent = 'Unknown';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('driverName').textContent = 'Unknown';
+            }
+        }
+        
+        // Process payment
+        async function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method.');
+                return;
+            }
+            
+            if ((selectedPaymentMethod === 'CREDIT_CARD' || selectedPaymentMethod === 'DEBIT_CARD') && 
+                !validateCardDetails()) {
+                return;
+            }
+            
+            try {
+                // Get the displayed fare amount from the UI
+                const fareAmount = parseFloat(document.getElementById('fareAmount').textContent);
+                const bookingId = document.getElementById('bookingId').textContent;
+                
+                // Ensure we have a valid booking ID and fare amount
+                if (!bookingId || isNaN(fareAmount) || fareAmount <= 0) {
+                    alert('Invalid booking details. Please refresh the page and try again.');
+                    return;
+                }
+                
+                // Create payment data object with values from UI if bookingData is incomplete
+                const paymentData = {
+                    bookingId: bookingId,
+                    userId: bookingData?.userId || 'user123', // Use default if not available
+                    driverId: bookingData?.driverId || 'driver123', // Use default if not available
+                    amount: fareAmount,
+                    paymentMethod: selectedPaymentMethod,
+                    notes: document.getElementById('notes').value,
+                    status: 'COMPLETED'
+                };
+                
+                console.log('Sending payment data:', paymentData);
+                
+                const response = await fetch('/api/payments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+                
+                const result = await response.json();
+                console.log('Payment response:', result);
+                
+                if (result.success) {
+                    // Show success modal
+                    document.getElementById('transactionId').textContent = result.data.transactionId || 'TXN' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                    const successModal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
+                    successModal.show();
+                    
+                    // Add event listener to redirect to payment history when modal is closed
+                    document.getElementById('paymentSuccessModal').addEventListener('hidden.bs.modal', function () {
+                        window.location.href = '/payment-history.html';
+                    });
+                } else {
+                    console.error('Payment error:', result.message);
+                    alert('Error processing payment: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to process payment. Please try again.');
+            }
+        }
+        
+        // Validate card details
+        function validateCardDetails() {
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value.trim();
+            const cvv = document.getElementById('cvv').value.trim();
+            const cardholderName = document.getElementById('cardholderName').value.trim();
+            
+            if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+                alert('Please fill in all card details.');
+                return false;
+            }
+            
+            // Simple validation (in a real app, you'd have more robust validation)
+            if (cardNumber.length < 16) {
+                alert('Please enter a valid card number.');
+                return false;
+            }
+            
+            if (!expiryDate.match(/^\d{2}\/\d{2}$/)) {
+                alert('Please enter a valid expiry date (MM/YY).');
+                return false;
+            }
+            
+            if (cvv.length < 3) {
+                alert('Please enter a valid CVV.');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html>
