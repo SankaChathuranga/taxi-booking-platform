@@ -21,4 +21,4 @@ public class User {
         DRIVER,
         ADMIN
     }
-}
+} 
