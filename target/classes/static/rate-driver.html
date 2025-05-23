@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Your Driver - Taxi Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .rating-container {
+            max-width: 600px;
+            margin: 100px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .rating-stars {
+            font-size: 40px;
+            cursor: pointer;
+            color: #d1d1d1;
+        }
+        .rating-stars .bi-star-fill.active {
+            color: #ffcc00;
+        }
+        .driver-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="rating-container">
+            <div class="text-center logo">
+                <i class="bi bi-taxi-front"></i> Taxi Service
+            </div>
+            <h2 class="mb-4 text-center">Rate Your Driver</h2>
+            <h4 id="driverNameHeading" class="mb-3 text-center text-primary"></h4>
+            
+            <div class="driver-info" id="driverInfo">
+                <div class="text-center">Loading driver information...</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">How was your ride?</label>
+                <div class="rating-stars text-center" id="ratingStars">
+                    <i class="bi bi-star-fill" data-rating="1"></i>
+                    <i class="bi bi-star-fill" data-rating="2"></i>
+                    <i class="bi bi-star-fill" data-rating="3"></i>
+                    <i class="bi bi-star-fill" data-rating="4"></i>
+                    <i class="bi bi-star-fill" data-rating="5"></i>
+                </div>
+                <div class="text-center mt-2" id="ratingText">Select a rating</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="commentInput" class="form-label">Comments (optional)</label>
+                <textarea class="form-control" id="commentInput" rows="3" placeholder="Share your experience..."></textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="submitRating" disabled>Submit Rating</button>
+                <a href="index.html" class="btn btn-outline-secondary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get booking ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('bookingId');
+            let selectedRating = 0;
+            
+            if (!bookingId) {
+                showError('No booking specified');
+                return;
+            }
+            
+            // Fetch booking details
+            fetchBookingDetails(bookingId);
+            
+            // Handle star rating
+            const stars = document.querySelectorAll('#ratingStars .bi-star-fill');
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    highlightStars(rating);
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    highlightStars(selectedRating);
+                });
+                
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.getAttribute('data-rating'));
+                    highlightStars(selectedRating);
+                    updateRatingText(selectedRating);
+                    document.getElementById('submitRating').disabled = false;
+                });
+            });
+            
+            // Handle rating submission
+            document.getElementById('submitRating').addEventListener('click', function() {
+                if (selectedRating === 0) {
+                    return;
+                }
+                
+                submitRating(bookingId, selectedRating);
+            });
+        });
+        
+        function fetchBookingDetails(bookingId) {
+            fetch(`/api/bookings/${bookingId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayBookingDetails(data.data);
+                        fetchDriverDetails(data.data.driverId);
+                    } else {
+                        showError('Failed to load booking details: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Failed to load booking details');
+                });
+        }
+        
+        function fetchDriverDetails(driverId) {
+            if (!driverId) {
+                showError('No driver ID provided');
+                return;
+            }
+            
+            // First try the admin endpoint
+            fetch(`/api/admin/drivers/${driverId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        displayDriverDetails(data.data);
+                        return;
+                    }
+                    
+                    // If admin endpoint fails, try the regular drivers endpoint
+                    return fetch(`/api/drivers/${driverId}`);
+                })
+                .then(response => {
+                    if (!response || !response.json) return null;
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success && data.data) {
+                        displayDriverDetails(data.data);
+                    } else {
+                        // If both fail, create a placeholder driver with the name from the name endpoint
+                        return fetch(`/api/drivers/${driverId}/name`)
+                            .then(response => response.json())
+                            .then(nameData => {
+                                if (nameData && nameData.success) {
+                                    const placeholderDriver = {
+                                        id: driverId,
+                                        fullName: nameData.data || 'Unknown Driver',
+                                        vehicleModel: 'Unknown Vehicle',
+                                        licensePlate: '',
+                                        rating: 0,
+                                        driverType: 'DRIVER'
+                                    };
+                                    displayDriverDetails(placeholderDriver);
+                                } else {
+                                    showError('Failed to load driver details');
+                                }
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Failed to load driver details');
+                });
+        }
+        
+        function displayBookingDetails(booking) {
+            // If we have booking details but not driver yet, show basic info
+            const driverInfo = document.getElementById('driverInfo');
+            driverInfo.innerHTML = `
+                <p><strong>Booking ID:</strong> ${booking.id}</p>
+                <p><strong>From:</strong> ${booking.pickupLocation}</p>
+                <p><strong>To:</strong> ${booking.dropLocation}</p>
+                <p><strong>Fare:</strong> $${booking.fare.toFixed(2)}</p>
+            `;
+        }
+        
+        function displayDriverDetails(driver) {
+            const driverInfo = document.getElementById('driverInfo');
+            const driverNameHeading = document.getElementById('driverNameHeading');
+            
+            // Set driver name in the heading
+            if (driverNameHeading) {
+                driverNameHeading.textContent = `${driver.fullName}`;
+            }
+            
+            // Format stars
+            const stars = '★'.repeat(Math.round(driver.rating || 0)) + 
+                          '☆'.repeat(5 - Math.round(driver.rating || 0));
+            
+            driverInfo.innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>${driver.fullName}</h5>
+                        <p class="mb-1"><strong>Vehicle:</strong> ${driver.vehicleModel} (${driver.licensePlate})</p>
+                        <p class="mb-1"><strong>Current Rating:</strong> ${driver.rating.toFixed(1)} ${stars}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="text-muted">${driver.driverType}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('#ratingStars .bi-star-fill');
+            stars.forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating <= rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        function updateRatingText(rating) {
+            const ratingText = document.getElementById('ratingText');
+            const ratings = [
+                'Select a rating',
+                'Poor - 1 star',
+                'Fair - 2 stars',
+                'Good - 3 stars',
+                'Very Good - 4 stars',
+                'Excellent - 5 stars'
+            ];
+            
+            ratingText.textContent = ratings[rating];
+        }
+        
+        function submitRating(bookingId, rating) {
+            const comment = document.getElementById('commentInput').value;
+            
+            const submitBtn = document.getElementById('submitRating');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+            
+            fetch(`/api/bookings/${bookingId}/rate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rating: rating,
+                    comment: comment
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message and redirect
+                    showSuccess('Thank you for your rating!');
+                    
+                    // Redirect to home page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showError('Failed to submit rating: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Rating';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Failed to submit rating');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Rating';
+            });
+        }
+        
+        function showError(message) {
+            const driverInfo = document.getElementById('driverInfo');
+            driverInfo.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+        
+        function showSuccess(message) {
+            const container = document.querySelector('.rating-container');
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="mb-4 text-success"><i class="bi bi-check-circle" style="font-size: 48px;"></i></div>
+                    <h3>${message}</h3>
+                    <p>Redirecting to home page...</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
